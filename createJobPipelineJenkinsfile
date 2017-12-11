@@ -1,0 +1,8 @@
+node {
+    stage('Creating directories') {
+    	jobDsl scriptText: """
+    		folder('${params.PRODUCT_DIRECTORY.toUpperCase()}')
+			folder('${params.PRODUCT_DIRECTORY.toUpperCase()}/${params.SYSTEM_DIRECTORY.toUpperCase()}')
+    	"""
+    }
+}
