@@ -5,4 +5,80 @@ node {
 			folder('${params.PRODUCT_DIRECTORY.toUpperCase()}/${params.SYSTEM_DIRECTORY.toUpperCase()}')
     	"""
     }
+
+    stage('Creating job PRE-DEPLOY') {
+    	jobDsl scriptText: """
+            pipelineJob('${params.PRODUCT_DIRECTORY.toUpperCase()}/${params.SYSTEM_DIRECTORY.toUpperCase()}/PRE-DEPLOY') {
+                logRotator(numToKeep = 10)
+                parameters {
+                    stringParam("TAG","", "Versão da TAG a ser gerada")
+                }
+                definition {
+                    cpsScm {
+                        scm {
+                            git {
+                                branch('*/master')
+                                remote {
+                                    credentials('Jenkins')
+                                    url('${params.GIT}')
+                                }
+                            }
+                        }
+                        scriptPath('Jenkinsfile')
+                    }
+                }
+            }
+    	"""
+    }
+
+    stage('Creating job DEPLOY') {
+    	jobDsl scriptText: """
+    		pipelineJob('${params.PRODUCT_DIRECTORY.toUpperCase()}/${params.SYSTEM_DIRECTORY.toUpperCase()}/DEPLOY') {
+    			logRotator(numToKeep = 10)
+    			parameters {
+        			gitParam('TAG') {
+            			type('TAG')
+            			sortMode('DESCENDING_SMART')
+            			branch('master')
+        			}
+    			}
+    			definition {
+	        		cpsScm {
+	            		scm {
+	                		git {
+	                    		branch('*/master')
+	                    		remote {
+	                        		credentials('Jenkins')
+	                        		url('${params.GIT}')
+	                    		}
+	                		}
+	            		}
+	            		scriptPath('Jenkinsfile')
+	        		}
+    			}
+    		}
+    	"""
+    }
+
+    stage ('Creating multbranch') {
+    	jobDsl scriptText: """
+    		multibranchPipelineJob('${params.PRODUCT_DIRECTORY.toUpperCase()}/${params.SYSTEM_DIRECTORY.toUpperCase()}/PIPELINE') {
+    		    branchSources {
+        			git {
+						remote('${params.GIT}')
+            			credentialsId('Jenkins')
+            			includes('develop beta')
+        			}
+    			}
+    			orphanedItemStrategy {
+        			discardOldItems {
+            			numToKeep(5)
+        			}
+    			}
+    			triggers {
+    				periodic(1)
+    			}
+			}
+        """
+    }
 }
