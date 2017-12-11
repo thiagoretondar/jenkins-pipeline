@@ -5,6 +5,6 @@ class HelperTest {
     def doSomething(someParam) {
         this.internalParam = someParam
 
-        return "Hello, ${someStringParam}."
+        return echo "Hello, ${someStringParam}."
     }
 }
