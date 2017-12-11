@@ -1,5 +1,5 @@
 import org.thiagoretondar.HelperTest
 
-def call(String someStringParam) {
+def call(someStringParam) {
     HelperTest someStringParam
 }
